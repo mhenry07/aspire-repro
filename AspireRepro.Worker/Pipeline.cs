@@ -2,13 +2,14 @@
 using System.IO.Pipelines;
 using System.Text;
 using AspireRepro.Resource;
+using Microsoft.Extensions.Options;
 
 namespace AspireRepro.Worker;
 
-public class Pipeline(HttpClient httpClient, ILogger<Pipeline> logger, ReadOptions options)
+public class Pipeline(HttpClient httpClient, ILogger<Pipeline> logger, IOptions<ReadOptions> options)
 {
-    private readonly int _batchSize = options.BatchSize ?? 100;
-    private readonly TimeSpan _delay = options.IoDelay ?? TimeSpan.FromSeconds(15);
+    private readonly int _batchSize = options.Value.BatchSize ?? 100;
+    private readonly TimeSpan _delay = options.Value.IoDelay ?? TimeSpan.FromSeconds(15);
 
     public async Task ReadAsync(CancellationToken cancellationToken)
     {

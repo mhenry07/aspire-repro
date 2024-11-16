@@ -1,23 +1,26 @@
 using AspireRepro.Worker;
+using Microsoft.Extensions.Options;
 
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.AddServiceDefaults();
 
-// see README.md for notes on options
-var readOptions = new ReadOptions
-{
-    BaseAddress = new("http://resource"),
-    BatchSize = 100,
-    ChunkSize = 65_536,
-    IoDelay = TimeSpan.FromMilliseconds(15)
-};
-
 builder.Services
+    .Configure<ReadOptions>(static options =>
+    {
+        // see README.md for notes on options
+        options.BaseAddress = "http://resource";
+        options.BatchSize = 100;
+        options.ChunkSize = 65_536;
+        options.IoDelay = TimeSpan.FromMilliseconds(15);
+    })
     .AddSingleton<Pipeline>()
-    .AddSingleton<ReadOptions>(readOptions)
     .AddHostedService<Worker>()
-    .AddHttpClient<Pipeline>(client => client.BaseAddress = new(readOptions.BaseAddress));
+    .AddHttpClient<Pipeline>((serviceProvider, client) =>
+    {
+        var options = serviceProvider.GetRequiredService<IOptions<ReadOptions>>();
+        client.BaseAddress = new(options.Value.BaseAddress);
+    });
 
 var host = builder.Build();
 host.Run();

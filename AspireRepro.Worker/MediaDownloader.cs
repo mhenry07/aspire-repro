@@ -1,13 +1,14 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Options;
 
 namespace AspireRepro.Worker;
 
 // adapted from https://github.com/googleapis/google-api-dotnet-client/blob/main/Src/Support/Google.Apis/Download/MediaDownloader.cs
 [SuppressMessage("Performance", "CA1835:Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'", Justification = "Mimicking Google's implementation")]
-public class MediaDownloader(HttpClient httpClient, ReadOptions options)
+public class MediaDownloader(HttpClient httpClient, IOptions<ReadOptions> options)
 {
     // see README.md for chunk size notes
-    private readonly int _chunkSize = options.ChunkSize ?? 10_485_760;
+    private readonly int _chunkSize = options.Value.ChunkSize ?? 10_485_760;
 
     public async Task DownloadAsync(string url, Stream stream, CancellationToken cancellationToken)
     {

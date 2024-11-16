@@ -40,8 +40,8 @@ Tested ChunkSize values:
 
 The HttpClient base address.
 
-- `new("https+http://resource")`: https results in: Win32Exception (0x80090330): The specified data could not be decrypted.
-- `new(http://resource)`: http seems to work better than https in this repo
+- `"https+http://resource"`: https results in: Win32Exception (0x80090330): The specified data could not be decrypted.
+- `"http://resource"`: http seems to work better than https in this repo
 
 ## BatchSize
 
