@@ -16,7 +16,7 @@ public static class Formatter
         Utf8Formatter.TryFormat(row, buffer[written..], out var bytes);
         written += bytes;
         written += Encoding.UTF8.GetBytes(",def,", buffer[written..]);
-        for (var i = 1; i <= row % 13; i++)
+        for (var i = 0; i <= row % 13; i++)
             buffer[written++] = (byte)'a';
         written += Encoding.UTF8.GetBytes(",ghi,", buffer[written..]);
         Utf8Formatter.TryFormat(GetTime1(row), buffer[written..], out bytes);
