@@ -12,7 +12,7 @@ app.MapDefaultEndpoints();
 app.MapGet("/get", async context =>
 {
     var stopping = app.Lifetime.ApplicationStopping;
-    context.Response.ContentType = "text/csv; charset=utf8";
+    context.Response.ContentType = "text/csv;charset=utf-8";
     await context.Response.StartAsync(stopping);
 
     var line = new byte[Formatter.MaxLineLength];
