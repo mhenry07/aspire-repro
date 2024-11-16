@@ -1,16 +1,31 @@
 # README
 
-To reproduce the issue, run the AspireRepro.AppHost project in the Visual Studio debugger and watch the logs
-from AspireRepro.Worker. With the debugger attached and a ChunkSize of 65_536, I am seeing the data discrepancy
-at row 64,979, ~5,440,060 bytes on Windows 10 using Visual Studio 17.12:
+Reported issue: [Visual Studio 17.12 Debugger corrupts System.IO.Pipelines data](https://developercommunity.visualstudio.com/t/Visual-Studio-1712-Debugger-corrupts-Sy/10789416)
 
-```
-Line was corrupted at row 64,979, ~5,440,060 bytes:
-Actual:   'abc,64941,def,01/01/0001 00:01:04 +00:00,ghi,941,jkl,01/01/0001 18:02:21 +00:00,mno'
-Expected: 'abc,64979,def,01/01/0001 00:01:04 +00:00,ghi,979,jkl,01/01/0001 18:02:59 +00:00,mno'
-```
+To reproduce the issue, run the AspireRepro.AppHost project in the Visual Studio debugger and watch the logs
+from AspireRepro.Worker. With the debugger attached and a ChunkSize of 1_000_000, I am seeing the data discrepancy
+at row 118,096, ~10,281,405 bytes on Windows 10 using Visual Studio 17.11:
+
 
 Compare running with the debugger attached vs. detached.
+
+Here are a couple logs when the data discrepancy occurred:
+
+ChunkSize: 1_000_000, debugger attached:
+
+```
+Line was corrupted at row 118,096, ~10,281,405 bytes:
+Actual:   'abc,118096,def,aaaaghi,01/01/0001 00:01:58 +00:00,jkl,01/02/0001 08:48:11 +00:00,mno'
+Expected: 'abc,118096,def,aaaa,ghi,01/01/0001 00:01:58 +00:00,jkl,01/02/0001 08:48:16 +00:00,mno'
+```
+
+ChunkSize: 1_000_000, debugger attached:
+
+```
+Line was corrupted at row 102,958, ~8,949,250 bytes:
+Actual:   ',ghi,01/01/0001 00:01:42 +00:00,jkl,01/02/0001 04:30:29 +00:00,mno'
+Expected: 'abc,102958,def,aaaaaaaaaaa,ghi,01/01/0001 00:01:42 +00:00,jkl,01/02/0001 04:35:58 +00:00,mno'
+```
 
 The reproduction features the following:
 
@@ -32,9 +47,12 @@ ChunkSize seems to be a significant factor in reproducing the issue. It affects 
 Tested ChunkSize values:
 
 - 10_485_760: 10 MiB is the Google default, but in this repo it results in: HttpIOException: The response ended prematurely.
-- 1_000_000: in this repo 1 MB results in: HttpIOException: Received an invalid end of chunk terminator
-- 65_536: 64 KiB reproduces the issue only when the debugger is attached, which matches the behavior in real code
-    - in real code, I experienced this with default chunk size of 10 MiB
+- 1_000_000: Reproduced the issue with the debugger attached at row 118,096, ~10,281,405 bytes / row 102,958, ~8,949,250 bytes.
+    - However, with the debugger detached, I get: HttpIOException: Received an invalid chunk terminator
+      after row 342,171, ~29,999,927 bytes. In my original solution and some iterations of this repro, I get no errors
+      with the debugger detached.
+
+(note: after some tweaks, the ChunkSize results changed from a previous iteration)
 
 ## BaseAddress
 

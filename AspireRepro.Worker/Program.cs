@@ -11,7 +11,7 @@ builder.Services
         // see README.md for notes on options
         options.BaseAddress = "http://resource";
         options.BatchSize = 100;
-        options.ChunkSize = 65_536;
+        options.ChunkSize = 1_000_000;
         options.IoDelay = TimeSpan.FromMilliseconds(15);
     })
     .AddSingleton<Pipeline>()

@@ -1,5 +1,6 @@
 ﻿namespace AspireRepro.Worker;
 
+// see notes in README.md
 public class ReadOptions
 {
     public required string BaseAddress { get; set; }
