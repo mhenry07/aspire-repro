@@ -19,11 +19,8 @@ The reproduction features the following:
     - see: https://github.com/googleapis/google-api-dotnet-client/blob/main/Src/Support/Google.Apis/Download/MediaDownloader.cs
 - an implementation of System.IO.Pipelines is used to process each line
 - some work is done on the lines, including:
-    - adding each processed row number to a collection
     - lines are compared to expected to check for data corruption
-    - for every `BatchSize` lines, some fake I/O is performed (Task.WhenAll / Task.Delay)
-
-I seemed to require each of these elements to reproduce the issue, which is why this reproduction is somewhat complex.
+    - for every `BatchSize` lines, some fake I/O is performed (Task.Delay)
 
 `ReadOptions` can be set in AspireRepro.Worker/Program.cs:
 

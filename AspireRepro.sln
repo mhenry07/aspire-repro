@@ -2,16 +2,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35506.116
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspireRepro.AppHost", "AspireRepro.AppHost\AspireRepro.AppHost.csproj", "{6D38D153-4518-49DF-88C2-A841B86C7510}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspireRepro.AppHost", "AspireRepro.AppHost\AspireRepro.AppHost.csproj", "{6D38D153-4518-49DF-88C2-A841B86C7510}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspireRepro.ServiceDefaults", "AspireRepro.ServiceDefaults\AspireRepro.ServiceDefaults.csproj", "{83E6E292-0D53-4B08-84B0-AF328A28FBE0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspireRepro.ServiceDefaults", "AspireRepro.ServiceDefaults\AspireRepro.ServiceDefaults.csproj", "{83E6E292-0D53-4B08-84B0-AF328A28FBE0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspireRepro.Resource", "AspireRepro.Resource\AspireRepro.Resource.csproj", "{783F8A72-3B89-49F3-859E-9EC0AB08789B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspireRepro.Resource", "AspireRepro.Resource\AspireRepro.Resource.csproj", "{783F8A72-3B89-49F3-859E-9EC0AB08789B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspireRepro.Worker", "AspireRepro.Worker\AspireRepro.Worker.csproj", "{350F540A-4707-4488-99C6-50B22091EFD3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspireRepro.Worker", "AspireRepro.Worker\AspireRepro.Worker.csproj", "{350F540A-4707-4488-99C6-50B22091EFD3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9FD19D83-260D-41EE-9380-036F9A572F56}"
 	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
 		README.md = README.md
 	EndProjectSection
 EndProject
@@ -40,5 +41,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0B76409F-71A5-4EED-AD14-B6F389553C16}
 	EndGlobalSection
 EndGlobal

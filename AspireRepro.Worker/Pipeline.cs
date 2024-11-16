@@ -38,7 +38,6 @@ public class Pipeline(HttpClient httpClient, ILogger<Pipeline> logger, ReadOptio
     private async Task ReadPipeAsync(PipeReader reader, CancellationToken cancellationToken)
     {
         var bytesConsumed = 0L;
-        var collection = new BatchCollection();
         var row = 0L;
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -49,7 +48,7 @@ public class Pipeline(HttpClient httpClient, ILogger<Pipeline> logger, ReadOptio
             while (TryReadLine(ref buffer, out ReadOnlySequence<byte> line))
             {
                 var bytes = bytesConsumed + result.Buffer.Slice(start, buffer.Start).Length;
-                await ProcessLineAsync(line, collection, row, bytes);
+                await ProcessLineAsync(line, row, bytes);
 
                 row++;
             }
@@ -67,29 +66,13 @@ public class Pipeline(HttpClient httpClient, ILogger<Pipeline> logger, ReadOptio
         await reader.CompleteAsync();
     }
 
-    private async Task ProcessLineAsync(
-        ReadOnlySequence<byte> line, BatchCollection collection, long row, long bytes)
+    private async Task ProcessLineAsync(ReadOnlySequence<byte> line, long row, long bytes)
     {
         ProcessLineCore(line, row, bytes);
 
-        // the issue only seems to happen when adding to a collection like this
-        collection.Add(row);
-
         if (row > 0 && row % _batchSize == 0)
-        {
-            await ProcessBatchAsync(collection);
-            collection.TryReset();
-        }
+            await Task.Delay(_delay);
     }
-
-    private async Task ProcessBatchAsync(BatchCollection collection)
-        => await Task.WhenAll(GetTasks(collection));
-
-    private Task[] GetTasks(BatchCollection collection)
-        => collection.Select(_ => DoIoAsync()).ToArray();
-
-    // the issue only seems to happen when this method is async/await (not elided)
-    private async Task DoIoAsync() => await Task.Delay(_delay);
 
     private void ProcessLineCore(ReadOnlySequence<byte> line, long row, long bytes)
     {
