@@ -6,15 +6,11 @@ namespace AspireRepro.Worker;
 [SuppressMessage("Performance", "CA1835:Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'", Justification = "Mimicking Google's implementation")]
 public class MediaDownloader(HttpClient httpClient, ReadOptions options)
 {
+    // see README.md for chunk size notes
     private readonly int _chunkSize = options.ChunkSize ?? 10_485_760;
 
     public async Task DownloadAsync(string url, Stream stream, CancellationToken cancellationToken)
     {
-        ////var chunkSize = DefaultChunkSize;
-        ////var chunkSize = 1_000_000; // HttpIOException: Received an invalid end of chunk terminator
-        //var chunkSize = 65_536; // Line was corrupted at row 62,062, ~5,195,289 bytes: 'abc,62031,def,01/01/0001 00:01:02 +00:00,ghi,31,jkl,01/01/0001 17:13:51 +00:00,mno'
-        //// chunkSize = 65_536 reproduces the issue with Debugger attached and does not cause the issue when the debugger is not attached
-
         var response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         var buffer = new CountedBuffer(_chunkSize + 1);
@@ -47,8 +43,6 @@ public class MediaDownloader(HttpClient httpClient, ReadOptions options)
                 }
                 break;
             }
-            //var str = Encoding.UTF8.GetString(Data.AsSpan(0, Count));
-            //Console.WriteLine(str);
         }
 
         public void RemoveFromFront(int n)

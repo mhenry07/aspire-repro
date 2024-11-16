@@ -9,8 +9,6 @@ var app = builder.Build();
 
 app.MapDefaultEndpoints();
 
-app.MapGet("/", () => "Hello World!");
-
 app.MapGet("/get", async context =>
 {
     var stopping = app.Lifetime.ApplicationStopping;
