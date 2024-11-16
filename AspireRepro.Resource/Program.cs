@@ -21,7 +21,9 @@ app.MapGet("/get", async context =>
     while (row < MaxRows)
     {
         var length = Formatter.Format(line, row, eol: true);
-        await stream.WriteAsync(line.AsMemory(0, length), stopping);
+        var middle = row % (length / 2) + 1;
+        await stream.WriteAsync(line.AsMemory(0, middle), stopping);
+        await stream.WriteAsync(line.AsMemory(middle, length - middle), stopping);
         row++;
     }
 
