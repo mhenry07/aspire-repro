@@ -20,7 +20,7 @@ The reproduction features the following:
 - an implementation of System.IO.Pipelines is used to process each line
 - some work is done on the lines, including:
     - lines are compared to expected to check for data corruption
-    - for every `BatchSize` lines, some fake I/O is performed (Task.Delay)
+    - for every `BatchSize` lines, some fake I/O is performed (Task.WhenAll / Task.Delay)
 
 `ReadOptions` can be set in AspireRepro.Worker/Program.cs:
 

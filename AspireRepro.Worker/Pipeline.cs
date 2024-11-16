@@ -72,8 +72,11 @@ public class Pipeline(HttpClient httpClient, ILogger<Pipeline> logger, IOptions<
         ProcessLineCore(line, row, bytes);
 
         if (row > 0 && row % _batchSize == 0)
-            await Task.Delay(_delay);
+            await ProcessBatchAsync();
     }
+
+    private Task ProcessBatchAsync()
+        => Task.WhenAll(Enumerable.Range(0, _batchSize).Select(_ => Task.Delay(_delay)));
 
     private void ProcessLineCore(ReadOnlySequence<byte> line, long row, long bytes)
     {
