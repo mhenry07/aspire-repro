@@ -3,12 +3,13 @@ using System.Text;
 
 namespace AspireRepro.Resource;
 
-public class ValueUtility
+public static class Formatter
 {
     public const int MaxLineLength = 128;
     private const int TicksPerMs = 10_000;
     private const int TicksPerSec = 1_000 * TicksPerMs;
 
+    // $"abc,{row},def,{GetTime1(row)},ghi,{row % 1_000},jkl,{GetTime2(row)},mno"
     public static int Format(Span<byte> buffer, long row, bool eol)
     {
         var written = Encoding.UTF8.GetBytes("abc,", buffer);

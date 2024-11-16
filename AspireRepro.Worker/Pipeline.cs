@@ -79,12 +79,12 @@ public class Pipeline(HttpClient httpClient, ILogger<Pipeline> logger, ReadOptio
         if (line.IsEmpty)
             return;
 
-        if (line.Length > ValueUtility.MaxLineLength)
+        if (line.Length > Formatter.MaxLineLength)
             throw new InvalidOperationException($"Length exceeded max size at row {row:N0}, ~{bytes:N0} bytes");
 
         Span<byte> buffer = stackalloc byte[(int)line.Length];
-        Span<byte> expected = stackalloc byte[ValueUtility.MaxLineLength];
-        var expectedLength = ValueUtility.Format(expected, row, eol: false);
+        Span<byte> expected = stackalloc byte[Formatter.MaxLineLength];
+        var expectedLength = Formatter.Format(expected, row, eol: false);
         expected = expected[..expectedLength];
 
         var reader = new SequenceReader<byte>(line);

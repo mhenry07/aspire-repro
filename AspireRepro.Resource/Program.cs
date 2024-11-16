@@ -15,12 +15,12 @@ app.MapGet("/get", async context =>
     context.Response.ContentType = "text/csv; charset=utf8";
     await context.Response.StartAsync(stopping);
 
-    var line = new byte[ValueUtility.MaxLineLength];
+    var line = new byte[Formatter.MaxLineLength];
     var row = 0;
     using var stream = context.Response.Body;
     while (row < MaxRows)
     {
-        var length = ValueUtility.Format(line, row, eol: true);
+        var length = Formatter.Format(line, row, eol: true);
         await stream.WriteAsync(line.AsMemory(0, length), stopping);
         row++;
     }
