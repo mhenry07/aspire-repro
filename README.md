@@ -42,6 +42,9 @@ The reproduction features the following:
 - some work is done on the lines, including:
     - lines are compared to expected to check for data corruption
     - for every `BatchSize` lines, some fake I/O is performed (Task.WhenAll / Task.Delay)
+- AspireRepro.Resource mimics a simplified version of Google Cloud Storage
+    - Similar data corruption is experienced against [fake-gcs-server](https://github.com/fsouza/fake-gcs-server) when
+      consumed via the [Google.Cloud.Storage.V1](https://www.nuget.org/packages/Google.Cloud.Storage.V1) client library.
 
 `ReadOptions` can be set in AspireRepro.Worker/Program.cs:
 
@@ -72,6 +75,12 @@ The HttpClient base address.
 ## BatchSize
 
 - mimics processing lines according to BatchSize
+
+## ExecuteResponseVerifier
+
+- Indicates whether to execute the response verifier which uses an alternate approach to read and verify lines from the
+  response. May interfere with reproducing the issue, so it's disabled by default. It acts as a baseline to suggest
+  that the issue appears to be related to the pipeline and rather than the resource server.
 
 ## IoDelay
 

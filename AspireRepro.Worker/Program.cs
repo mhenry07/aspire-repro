@@ -12,15 +12,18 @@ builder.Services
         options.BaseAddress = "http://resource";
         options.BatchSize = 100;
         options.ChunkSize = 1_000_000;
+        options.ExecuteResponseVerifier = false;
         options.IoDelay = TimeSpan.FromMilliseconds(15);
     })
     .AddSingleton<Pipeline>()
-    .AddHostedService<Worker>()
-    .AddHttpClient<Pipeline>((serviceProvider, client) =>
-    {
-        var options = serviceProvider.GetRequiredService<IOptions<ReadOptions>>();
-        client.BaseAddress = new(options.Value.BaseAddress);
-    });
+    .AddSingleton<ResponseVerifier>()
+    .AddHostedService<Worker>();
+
+builder.Services.AddHttpClient<ResourceClient>((serviceProvider, client) =>
+{
+    var options = serviceProvider.GetRequiredService<IOptions<ReadOptions>>();
+    client.BaseAddress = new(options.Value.BaseAddress);
+});
 
 var host = builder.Build();
 host.Run();

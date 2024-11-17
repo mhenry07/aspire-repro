@@ -6,24 +6,33 @@ using Microsoft.Extensions.Options;
 
 namespace AspireRepro.Worker;
 
-public class Pipeline(HttpClient httpClient, ILogger<Pipeline> logger, IOptions<ReadOptions> options)
+public class Pipeline(
+    IHostApplicationLifetime lifetime, ILogger<Pipeline> logger, IOptions<ReadOptions> options, ResourceClient resourceClient)
 {
     private readonly int _batchSize = options.Value.BatchSize ?? 100;
     private readonly TimeSpan _delay = options.Value.IoDelay ?? TimeSpan.FromSeconds(15);
 
     public async Task ReadAsync(CancellationToken cancellationToken)
     {
-        var pipe = new Pipe();
+        try
+        {
+            var pipe = new Pipe();
 
-        var writeTask = FillPipeAsync(pipe.Writer, cancellationToken);
-        var readTask = ReadPipeAsync(pipe.Reader, cancellationToken);
+            var writeTask = FillPipeAsync(pipe.Writer, cancellationToken);
+            var readTask = ReadPipeAsync(pipe.Reader, cancellationToken);
 
-        await Task.WhenAll(readTask, writeTask);
+            await Task.WhenAll(readTask, writeTask);
+        }
+        catch (Exception ex)
+        {
+            logger.LogCritical(ex, "Pipeline failed, stopping application");
+            lifetime.StopApplication();
+        }
     }
 
     private async Task FillPipeAsync(PipeWriter writer, CancellationToken cancellationToken)
     {
-        var mediaDownloader = new MediaDownloader(httpClient, options);
+        var mediaDownloader = new MediaDownloader(resourceClient.HttpClient, options);
         using var stream = writer.AsStream();
         try
         {
@@ -40,31 +49,37 @@ public class Pipeline(HttpClient httpClient, ILogger<Pipeline> logger, IOptions<
     {
         var bytesConsumed = 0L;
         var row = 0L;
-        while (!cancellationToken.IsCancellationRequested)
+        try
         {
-            var result = await reader.ReadAsync(default);
-            var buffer = result.Buffer;
-            var start = buffer.Start;
-
-            while (TryReadLine(ref buffer, out ReadOnlySequence<byte> line))
+            while (!cancellationToken.IsCancellationRequested)
             {
-                var bytes = bytesConsumed + result.Buffer.Slice(start, buffer.Start).Length;
-                await ProcessLineAsync(line, row, bytes);
+                var result = await reader.ReadAsync(default);
+                var buffer = result.Buffer;
+                var start = buffer.Start;
 
-                row++;
+                while (TryReadLine(ref buffer, out ReadOnlySequence<byte> line))
+                {
+                    var bytes = bytesConsumed + result.Buffer.Slice(start, buffer.Start).Length;
+                    await ProcessLineAsync(line, row, bytes);
+
+                    row++;
+                }
+
+                bytesConsumed += result.Buffer.Slice(start, buffer.Start).Length;
+                reader.AdvanceTo(buffer.Start, buffer.End);
+                logger.LogInformation("Pipeline: Advanced reader at row {Row:N0}, ~{BytesConsumed:N0} bytes", row, bytesConsumed);
+
+                if (result.IsCompleted)
+                    break;
             }
 
-            bytesConsumed += result.Buffer.Slice(start, buffer.Start).Length;
-            reader.AdvanceTo(buffer.Start, buffer.End);
-            logger.LogInformation("Advanced reader at row {Row:N0}, ~{BytesConsumed:N0} bytes", row, bytesConsumed);
-
-            if (result.IsCompleted)
-            {
-                break;
-            }
+            await reader.CompleteAsync();
         }
-
-        await reader.CompleteAsync();
+        catch (Exception ex)
+        {
+            await reader.CompleteAsync(ex);
+            throw;
+        }
     }
 
     private async Task ProcessLineAsync(ReadOnlySequence<byte> line, long row, long bytes)
@@ -84,7 +99,7 @@ public class Pipeline(HttpClient httpClient, ILogger<Pipeline> logger, IOptions<
             return;
 
         if (line.Length > Formatter.MaxLineLength)
-            throw new InvalidOperationException($"Length exceeded max size at row {row:N0}, ~{bytes:N0} bytes");
+            throw new InvalidOperationException($"Length exceeded max size at row {row:N0}, ~{bytes:N0} bytes: {Encoding.UTF8.GetString(line)}");
 
         Span<byte> buffer = stackalloc byte[(int)line.Length];
         Span<byte> expected = stackalloc byte[Formatter.MaxLineLength];
@@ -97,7 +112,7 @@ public class Pipeline(HttpClient httpClient, ILogger<Pipeline> logger, IOptions<
 
         var lineText = Encoding.UTF8.GetString(line);
         var expectedText = Encoding.UTF8.GetString(expected[..expectedLength]);
-        logger.LogError("Line was corrupted at row {Row:N0}, ~{BytesConsumed:N0} bytes:\nActual:   '{Actual}'\nExpected: '{Expected}'", row, bytes, lineText, expectedText);
+        logger.LogError("Pipeline: Line was corrupted at row {Row:N0}, ~{BytesConsumed:N0} bytes:\nActual:   '{Actual}'\nExpected: '{Expected}'", row, bytes, lineText, expectedText);
         throw new InvalidOperationException($"Line was corrupted at row {row:N0}, ~{bytes:N0} bytes: '{lineText}'");
     }
 
