@@ -3,7 +3,10 @@ using AspireRepro.Resource;
 
 namespace AspireRepro.Worker;
 
-/// <summary>Verifies that the response contains the expected lines</summary>
+/// <summary>
+/// Reads the response without using MediaDownloader or System.IO.Pipelines and verifies that the response contains the
+/// expected lines
+/// </summary>
 public class ResponseVerifier(ILogger<ResponseVerifier> logger, ResourceClient resourceClient)
 {
     public async Task VerifyAsync(CancellationToken cancellationToken)
@@ -30,7 +33,7 @@ public class ResponseVerifier(ILogger<ResponseVerifier> logger, ResourceClient r
 
             row++;
 
-            if (row % 10_000_000 == 0)
+            if (row % 1_000_000 == 0)
                 logger.LogInformation("ResponseVerifier: Verified {Count:N0} lines, ~{BytesReceived:N0} bytes", row, bytesReceived);
         }
     }

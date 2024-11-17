@@ -1,6 +1,6 @@
 using AspireRepro.Resource;
 
-const int MaxRows = 1_000_000_000;
+const int MaxRows = 20_000_000;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -80,36 +80,33 @@ The HttpClient base address.
 
 Mimics processing lines according to BatchSize.
 
-### ExecuteResponseVerifier
-
-Indicates whether to execute the response verifier which uses an alternate approach to read and verify lines from the
-response. May interfere with reproducing the issue, so it's disabled by default. It acts as a baseline to suggest
-that the issue appears to be related to the pipeline rather than the resource endpoint.
-
 ### IoDelay
 
 Mimics doing some I/O when processing a batch of lines.
 
+### ReaderType
+
+There are multiple reader implementations. PipeMediaDownloader reproduces the issue and the others are for comparison
+and validation.
+
+- `PipeMediaDownloader`: Reads and processes the response using System.IO.Pipelines and MediaDownloader and triggers
+  the issue in some cases
+- `PipeCopyTo`: Reads and processes the response using System.IO.Pipelines and CopyTo without using MediaDownloader
+- `StreamReaderMediaDownloader`: Reads and processes the response using StreamReader and MediaDownloader without using
+  System.IO.Pipelines. Uses a lot of memory since it buffers the full response.
+- `ResponseVerifier`: Reads the response without using MediaDownloader or System.IO.Pipelines and verifies that the
+  response contains the expected lines
+
 ## MediaDownloader notes
 
+MediaDownloader is adapted from
 [MediaDownloader.cs](https://github.com/googleapis/google-api-dotnet-client/blob/main/Src/Support/Google.Apis/Download/MediaDownloader.cs)
+and is used by the [Google.Cloud.Storage.V1](https://www.nuget.org/packages/Google.Cloud.Storage.V1) client library.
 
 - MediaDownloader.cs license: see AspireRepro.Worker/MediaDownloader.LICENSE.txt
 
-It appears that short-circuiting the MediaDownloader implementation results in the issue not occurring:
+The issue appears to occur specifically when System.IO.Pipelines and MediaDownloader are used together
+(PipeMediaDownloader). The other implementations don't appear to trigger the reported issue.
 
-```csharp
-var response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
-await responseStream.CopyToAsync(stream, _chunkSize, cancellationToken);
-```
-
-The above snippet seems to work well most of the time. The second time I got the following error:
-
-```
-System.Net.Http.HttpIOException: Received an invalid chunk extension: '2C-59-59-59-59-59-59-59-59-59-59-59-59-2C-67-68-69-2C-30-31-2F-30-31-2F-30-30-30-31-20-30-30-3A'. (InvalidResponse)
-   at System.Net.Http.HttpConnection.ChunkedEncodingReadStream.ValidateChunkExtension(ReadOnlySpan`1 lineAfterChunkSize)
-   at System.Net.Http.HttpConnection.ChunkedEncodingReadStream.ReadChunkFromConnectionBuffer(Int32 maxBytesToRead, CancellationTokenRegistration cancellationRegistration)
-   at System.Net.Http.HttpConnection.ChunkedEncodingReadStream.CopyToAsyncCore(Stream destination, CancellationToken cancellationToken)
-   at AspireRepro.Worker.MediaDownloader.DownloadAsync(String url, Stream stream, CancellationToken cancellationToken)
-```
+Ideally, it would be preferable to get System.IO.Pipelines and MediaDownloader to work well together, so that the
+Google.Cloud.Storage.V1 client library can be used to handle auth and other concerns.

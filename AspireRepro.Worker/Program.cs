@@ -12,11 +12,13 @@ builder.Services
         options.BaseAddress = "http://resource";
         options.BatchSize = 100;
         options.ChunkSize = 4_000_000;
-        options.ExecuteResponseVerifier = false;
         options.IoDelay = TimeSpan.FromMilliseconds(15);
+        options.ReaderType = ReaderType.PipeMediaDownloader;
     })
-    .AddSingleton<Pipeline>()
+    .AddSingleton<PipeCopyTo>()
+    .AddSingleton<PipeMediaDownloader>()
     .AddSingleton<ResponseVerifier>()
+    .AddSingleton<StreamReaderMediaDownloader>()
     .AddHostedService<Worker>();
 
 builder.Services.AddHttpClient<ResourceClient>((serviceProvider, client) =>
