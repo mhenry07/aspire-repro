@@ -11,7 +11,7 @@ builder.Services
         // see README.md for notes on options
         options.BaseAddress = "http://resource";
         options.BatchSize = 100;
-        options.ChunkSize = 1_000_000;
+        options.ChunkSize = 4_000_000;
         options.ExecuteResponseVerifier = false;
         options.IoDelay = TimeSpan.FromMilliseconds(15);
     })
