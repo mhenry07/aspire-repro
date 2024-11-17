@@ -3,7 +3,12 @@ using Microsoft.Extensions.Options;
 
 namespace AspireRepro.Worker;
 
-// adapted from https://github.com/googleapis/google-api-dotnet-client/blob/main/Src/Support/Google.Apis/Download/MediaDownloader.cs
+// Modified from: https://github.com/googleapis/google-api-dotnet-client/blob/main/Src/Support/Google.Apis/Download/MediaDownloader.cs
+// For license, see MediaDownloader.LICENSE.txt.
+// Simplified implementation in order to reproduce issue.
+
+// Apart from adjusting ChunkSize, we don't have much control of this implementation when going through the
+// [Google.Cloud.Storage.V1](https://www.nuget.org/packages/Google.Cloud.Storage.V1) client library.
 [SuppressMessage("Performance", "CA1835:Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'", Justification = "Mimicking Google's implementation")]
 public class MediaDownloader(HttpClient httpClient, IOptions<ReadOptions> options)
 {
