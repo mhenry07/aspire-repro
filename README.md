@@ -2,12 +2,10 @@
 
 Reported issue: [Visual Studio 17.12 Debugger corrupts System.IO.Pipelines data](https://developercommunity.visualstudio.com/t/Visual-Studio-1712-Debugger-corrupts-Sy/10789416)
 
-To reproduce the issue, run the AspireRepro.AppHost project in the Visual Studio debugger and watch the logs
-from AspireRepro.Worker.
+To reproduce the issue, run the AspireRepro.AppHost project and watch the logs from AspireRepro.Worker.
 
-Compare running with the debugger attached vs. detached.
-
-Note: Since filing the issue, I've been able to reproduce the issue in VS 17.11 and with the debugger detached.
+Note: Since filing the Visual Studio issue, I've been able to reproduce the issue in VS 17.11 and VS 17.12, with the
+debugger attached and detached, in .NET 8.0 and .NET 9.0.
 
 Here are some logs of when the data discrepancy occurred:
 
@@ -37,10 +35,8 @@ Here are some logs of when the data discrepancy occurred:
 
 The reproduction features the following:
 
-- HttpClient and MediaDownloader are used to download a large CSV file using the content stream (from AspireRepro.Resource)
-- MediaDownloader is an adaptation of the Google Cloud Storage downloader
-    - see: https://github.com/googleapis/google-api-dotnet-client/blob/main/Src/Support/Google.Apis/Download/MediaDownloader.cs
-- an implementation of System.IO.Pipelines is used to process each line
+- `HttpClient` is used to download a large CSV file using the content stream (from AspireRepro.Resource)
+- write from the content stream to a buffer until the buffer is filled
 - some work is done on the lines, including:
     - lines are compared to expected to check for data corruption
     - for every `BatchSize` lines, some fake I/O is performed (Task.WhenAll / Task.Delay)
@@ -86,15 +82,19 @@ Mimics doing some I/O when processing a batch of lines.
 
 ### ReaderType
 
-There are multiple reader implementations. *PipeMediaDownloader*, *PipeMediaDownloaderSemaphoreStream*, and
-*PipeFillBuffer* reproduce the issue and the others are for comparison and validation.
+There are multiple reader implementations. *FillBufferReader*, *PipeFillBuffer*, *PipeMediaDownloader*, and
+*PipeMediaDownloaderSemaphoreStream* reproduce the issue and the others are for comparison and validation.
 
+- `BufferReader`: Reads and processes the response stream using a buffer without using System.IO.Pipelines or
+  MediaDownloader
+- `FillBufferReader`: Uses *BufferReader* with an algorithm similar to MediaDownloader to fill the buffer and triggers
+  the issue in some cases
 - `PipeMediaDownloader`: Reads and processes the response using System.IO.Pipelines and MediaDownloader and triggers
   the issue in some cases
-- `PipeMediaDownloaderSemaphoreStream`: Uses PipeMediaDownloader and wraps the writer stream in a SemaphoreStream and
+- `PipeMediaDownloaderSemaphoreStream`: Uses *PipeMediaDownloader* and wraps the writer stream in a SemaphoreStream and
   triggers the issue in some cases
 - `PipeBuffer`: Reads and processes the response using System.IO.Pipelines and a buffer without using MediaDownloader
-- `PipeFillBuffer`: Uses PipeBuffer with an algorithm similar to MediaDownloader to fill the buffer and triggers the
+- `PipeFillBuffer`: Uses *PipeBuffer* with an algorithm similar to MediaDownloader to fill the buffer and triggers the
   issue in some cases
 - `PipeCopyTo`: Reads and processes the response using System.IO.Pipelines and CopyTo without using MediaDownloader
 - `ReadWriteStreamMediaDownloader`: Reads and processes the response using ReadWriteStream, StreamReader, and
@@ -113,9 +113,11 @@ and is used by the [Google.Cloud.Storage.V1](https://www.nuget.org/packages/Goog
 
 - MediaDownloader.cs license: see AspireRepro.Worker/MediaDownloader.LICENSE.txt
 
-The issue appears to occur specifically when System.IO.Pipelines and MediaDownloader or a similar algorithm are used
-together (PipeMediaDownloader, PipeMediaDownloaderSemaphoreStream, and PipeFillBuffer). The other implementations don't
+The issue appears to occur specifically when `MediaDownloader` or a similar algorithm is used to read the HttpClient
+content stream until a buffer is full before processing lines. *FillBufferReader*, *PipeFillBuffer*,
+*PipeMediaDownloader*, and *PipeMediaDownloaderSemaphoreStream* reproduce the issue. The other implementations don't
 appear to trigger the reported issue.
 
-Ideally, it would be preferable to get System.IO.Pipelines and MediaDownloader to work well together, so that the
-Google.Cloud.Storage.V1 client library can be used to handle auth and other concerns.
+Ideally, it would be preferable to get MediaDownloader and the HttpClient content stream to work well together in a
+way that avoids buffering the full response, so that the Google.Cloud.Storage.V1 client library can be used to handle
+auth and other concerns.

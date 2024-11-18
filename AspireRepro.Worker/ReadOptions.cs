@@ -12,6 +12,11 @@ public class ReadOptions
 
 public enum ReaderType
 {
+    BufferReader,
+
+    /// <remarks>Triggers the issue</remarks>
+    FillBufferReader,
+
     PipeBuffer,
     PipeCopyTo,
 
