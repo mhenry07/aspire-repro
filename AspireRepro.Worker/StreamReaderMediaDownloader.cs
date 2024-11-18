@@ -39,13 +39,13 @@ public class StreamReaderMediaDownloader(
             if (!actual.AsSpan(0, actualLength).SequenceEqual(expected.AsSpan(0, expectedLength)))
             {
                 var expectedLine = Encoding.UTF8.GetString(expected.AsSpan(0, expectedLength));
-                logger.LogError(nameof(StreamReaderMediaDownloader) + ": Actual line did not match expected line at row {Row:N0}, ~{BytesReceived:N0} bytes\nActual:   '{ActualLine}'\nExpected: '{ExpectedLine}'", row, bytesConsumed, line, expectedLine);
+                logger.LogError("{ReaderType}: Actual line did not match expected line at row {Row:N0}, ~{BytesReceived:N0} bytes\nActual:   '{ActualLine}'\nExpected: '{ExpectedLine}'", options.Value.ReaderType, row, bytesConsumed, line, expectedLine);
             }
 
             row++;
 
             if (row % 1_000_000 == 0)
-                logger.LogInformation(nameof(StreamReaderMediaDownloader) + ": Read {Count:N0} lines, ~{BytesReceived:N0} bytes", row, bytesConsumed);
+                logger.LogInformation("{ReaderType}: Read {Count:N0} lines, ~{BytesReceived:N0} bytes", options.Value.ReaderType, row, bytesConsumed);
         }
     }
 }

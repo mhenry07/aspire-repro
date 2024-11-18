@@ -44,14 +44,14 @@ public class ReadWriteStreamMediaDownloader(
                 row++;
 
                 if (row % 20_000 == 0)
-                    logger.LogInformation(nameof(ReadWriteStreamMediaDownloader) + ": Processed {Count:N0} lines, ~{BytesConsumed:N0} bytes", row, bytesConsumed);
+                    logger.LogInformation("{ReaderType}: Processed {Count:N0} lines, ~{BytesConsumed:N0} bytes", options.Value.ReaderType, row, bytesConsumed);
             }
 
             await downloadTask;
         }
         catch (Exception ex)
         {
-            logger.LogCritical(ex, $"{nameof(ReadWriteStreamMediaDownloader)} failed, stopping application");
+            logger.LogCritical(ex, "{ReaderType} failed, stopping application", options.Value.ReaderType);
             cts.Cancel();
             lifetime.StopApplication();
         }
@@ -87,7 +87,7 @@ public class ReadWriteStreamMediaDownloader(
             return;
 
         var expectedText = Encoding.UTF8.GetString(expected[..expectedLength]);
-        logger.LogError(nameof(ReadWriteStreamMediaDownloader) + ": Line was corrupted at row {Row:N0}, ~{BytesConsumed:N0} bytes:\nActual:   '{Actual}'\nExpected: '{Expected}'", row, bytes, line, expectedText);
+        logger.LogError("{ReaderType}: Line was corrupted at row {Row:N0}, ~{BytesConsumed:N0} bytes:\nActual:   '{Actual}'\nExpected: '{Expected}'", options.Value.ReaderType, row, bytes, line, expectedText);
         throw new InvalidOperationException($"Line was corrupted at row {row:N0}, ~{bytes:N0} bytes: '{line}'");
     }
 }

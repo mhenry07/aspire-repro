@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using AspireRepro.Resource;
+using Microsoft.Extensions.Options;
 
 namespace AspireRepro.Worker;
 
@@ -7,7 +8,8 @@ namespace AspireRepro.Worker;
 /// Reads the response without using System.IO.Pipelines or <see cref="MediaDownloader"/> and verifies that the
 /// response contains the expected lines
 /// </summary>
-public class ResponseVerifier(ILogger<ResponseVerifier> logger, ResourceClient resourceClient)
+public class ResponseVerifier(
+    ILogger<ResponseVerifier> logger, IOptions<ReadOptions> options, ResourceClient resourceClient)
 {
     public async Task VerifyAsync(CancellationToken cancellationToken)
     {
@@ -27,13 +29,13 @@ public class ResponseVerifier(ILogger<ResponseVerifier> logger, ResourceClient r
             if (!actual.AsSpan(0, actualLength).SequenceEqual(expected.AsSpan(0, expectedLength)))
             {
                 var expectedLine = Encoding.UTF8.GetString(expected.AsSpan(0, expectedLength));
-                logger.LogError(nameof(ResponseVerifier) + ": Actual line did not match expected line at row {Row:N0}, ~{BytesReceived:N0} bytes\nActual:   '{ActualLine}'\nExpected: '{ExpectedLine}'", row, bytesReceived, line, expectedLine);
+                logger.LogError("{ReaderType}: Actual line did not match expected line at row {Row:N0}, ~{BytesReceived:N0} bytes\nActual:   '{ActualLine}'\nExpected: '{ExpectedLine}'", options.Value.ReaderType, row, bytesReceived, line, expectedLine);
             }
 
             row++;
 
             if (row % 1_000_000 == 0)
-                logger.LogInformation(nameof(ResponseVerifier) + ": Verified {Count:N0} lines, ~{BytesReceived:N0} bytes", row, bytesReceived);
+                logger.LogInformation("{ReaderType}: Verified {Count:N0} lines, ~{BytesReceived:N0} bytes", options.Value.ReaderType, row, bytesReceived);
         }
     }
 }

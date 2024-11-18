@@ -11,7 +11,8 @@ namespace AspireRepro.Worker;
 /// in some cases
 /// </summary>
 public class PipeMediaDownloader(
-    IHostApplicationLifetime lifetime, ILogger<PipeMediaDownloader> logger, IOptions<ReadOptions> options, ResourceClient resourceClient)
+    IHostApplicationLifetime lifetime, ILogger<PipeMediaDownloader> logger, IOptions<ReadOptions> options,
+    ResourceClient resourceClient)
 {
     private readonly int _batchSize = options.Value.BatchSize ?? 100;
     private readonly TimeSpan _delay = options.Value.IoDelay ?? TimeSpan.FromSeconds(15);
@@ -29,7 +30,7 @@ public class PipeMediaDownloader(
         }
         catch (Exception ex)
         {
-            logger.LogCritical(ex, $"{nameof(PipeMediaDownloader)} failed, stopping application");
+            logger.LogCritical(ex, "{ReaderType} failed, stopping application", options.Value.ReaderType);
             lifetime.StopApplication();
         }
     }
@@ -71,7 +72,7 @@ public class PipeMediaDownloader(
 
                 bytesConsumed += result.Buffer.Slice(start, buffer.Start).Length;
                 reader.AdvanceTo(buffer.Start, buffer.End);
-                logger.LogInformation(nameof(PipeMediaDownloader) + ": Advanced reader at row {Row:N0}, ~{BytesConsumed:N0} bytes", row, bytesConsumed);
+                logger.LogInformation("{ReaderType}: Advanced reader at row {Row:N0}, ~{BytesConsumed:N0} bytes", options.Value.ReaderType, row, bytesConsumed);
 
                 if (result.IsCompleted)
                     break;
@@ -116,7 +117,7 @@ public class PipeMediaDownloader(
 
         var lineText = Encoding.UTF8.GetString(line);
         var expectedText = Encoding.UTF8.GetString(expected[..expectedLength]);
-        logger.LogError(nameof(PipeMediaDownloader) + ": Line was corrupted at row {Row:N0}, ~{BytesConsumed:N0} bytes:\nActual:   '{Actual}'\nExpected: '{Expected}'", row, bytes, lineText, expectedText);
+        logger.LogError("{ReaderType}: Line was corrupted at row {Row:N0}, ~{BytesConsumed:N0} bytes:\nActual:   '{Actual}'\nExpected: '{Expected}'", options.Value.ReaderType, row, bytes, lineText, expectedText);
         throw new InvalidOperationException($"Line was corrupted at row {row:N0}, ~{bytes:N0} bytes: '{lineText}'");
     }
 

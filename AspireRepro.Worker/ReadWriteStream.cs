@@ -1,7 +1,7 @@
 ﻿namespace AspireRepro.Worker;
 
 /// <summary>
-/// A stream implementation that synchronizes reading and writing so it can be read and written to interchangably
+/// A stream implementation that synchronizes reading and writing so it can be read and written to interchangeably
 /// </summary>
 public class ReadWriteStream : Stream
 {
