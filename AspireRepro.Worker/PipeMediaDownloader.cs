@@ -7,7 +7,8 @@ using Microsoft.Extensions.Options;
 namespace AspireRepro.Worker;
 
 /// <summary>
-/// Reads and processes the response using System.IO.Pipelines and MediaDownloader and triggers the issue in some cases
+/// Reads and processes the response using System.IO.Pipelines and <see cref="MediaDownloader"/> and triggers the issue
+/// in some cases
 /// </summary>
 public class PipeMediaDownloader(
     IHostApplicationLifetime lifetime, ILogger<PipeMediaDownloader> logger, IOptions<ReadOptions> options, ResourceClient resourceClient)
@@ -28,7 +29,7 @@ public class PipeMediaDownloader(
         }
         catch (Exception ex)
         {
-            logger.LogCritical(ex, "PipeMediaDownloader failed, stopping application");
+            logger.LogCritical(ex, $"{nameof(PipeMediaDownloader)} failed, stopping application");
             lifetime.StopApplication();
         }
     }
@@ -70,7 +71,7 @@ public class PipeMediaDownloader(
 
                 bytesConsumed += result.Buffer.Slice(start, buffer.Start).Length;
                 reader.AdvanceTo(buffer.Start, buffer.End);
-                logger.LogInformation("PipeMediaDownloader: Advanced reader at row {Row:N0}, ~{BytesConsumed:N0} bytes", row, bytesConsumed);
+                logger.LogInformation(nameof(PipeMediaDownloader) + ": Advanced reader at row {Row:N0}, ~{BytesConsumed:N0} bytes", row, bytesConsumed);
 
                 if (result.IsCompleted)
                     break;
@@ -115,7 +116,7 @@ public class PipeMediaDownloader(
 
         var lineText = Encoding.UTF8.GetString(line);
         var expectedText = Encoding.UTF8.GetString(expected[..expectedLength]);
-        logger.LogError("PipeMediaDownloader: Line was corrupted at row {Row:N0}, ~{BytesConsumed:N0} bytes:\nActual:   '{Actual}'\nExpected: '{Expected}'", row, bytes, lineText, expectedText);
+        logger.LogError(nameof(PipeMediaDownloader) + ": Line was corrupted at row {Row:N0}, ~{BytesConsumed:N0} bytes:\nActual:   '{Actual}'\nExpected: '{Expected}'", row, bytes, lineText, expectedText);
         throw new InvalidOperationException($"Line was corrupted at row {row:N0}, ~{bytes:N0} bytes: '{lineText}'");
     }
 

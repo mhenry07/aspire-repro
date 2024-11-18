@@ -7,7 +7,8 @@ using Microsoft.Extensions.Options;
 namespace AspireRepro.Worker;
 
 /// <summary>
-/// Reads and processes the response using System.IO.Pipelines and CopyTo without using MediaDownloader
+/// Reads and processes the response using System.IO.Pipelines and <see cref="HttpContent.CopyToAsync"/> without using
+/// <see cref="MediaDownloader"/>
 /// </summary>
 /// <remarks>
 /// Appears to avoid the issue that occurs when using System.IO.Pipelines with MediaDownloader
@@ -33,7 +34,7 @@ public class PipeCopyTo(
         }
         catch (Exception ex)
         {
-            logger.LogCritical(ex, "PipeCopyTo failed, stopping application");
+            logger.LogCritical(ex, $"{nameof(PipeCopyTo)} failed, stopping application");
             lifetime.StopApplication();
         }
     }
@@ -77,7 +78,7 @@ public class PipeCopyTo(
 
                 bytesConsumed += result.Buffer.Slice(start, buffer.Start).Length;
                 reader.AdvanceTo(buffer.Start, buffer.End);
-                logger.LogInformation("PipeCopyTo: Advanced reader at row {Row:N0}, ~{BytesConsumed:N0} bytes", row, bytesConsumed);
+                logger.LogInformation(nameof(PipeCopyTo) + ": Advanced reader at row {Row:N0}, ~{BytesConsumed:N0} bytes", row, bytesConsumed);
 
                 if (result.IsCompleted)
                     break;
@@ -122,7 +123,7 @@ public class PipeCopyTo(
 
         var lineText = Encoding.UTF8.GetString(line);
         var expectedText = Encoding.UTF8.GetString(expected[..expectedLength]);
-        logger.LogError("PipeCopyTo: Line was corrupted at row {Row:N0}, ~{BytesConsumed:N0} bytes:\nActual:   '{Actual}'\nExpected: '{Expected}'", row, bytes, lineText, expectedText);
+        logger.LogError(nameof(PipeCopyTo) + ": Line was corrupted at row {Row:N0}, ~{BytesConsumed:N0} bytes:\nActual:   '{Actual}'\nExpected: '{Expected}'", row, bytes, lineText, expectedText);
         throw new InvalidOperationException($"Line was corrupted at row {row:N0}, ~{bytes:N0} bytes: '{lineText}'");
     }
 
