@@ -16,6 +16,8 @@ public class PipeMediaDownloader(
 {
     private readonly int _batchSize = options.Value.BatchSize ?? 100;
     private readonly TimeSpan _delay = options.Value.IoDelay ?? TimeSpan.FromSeconds(15);
+    private readonly bool _useSemaphoreStream =
+        options.Value.ReaderType == ReaderType.PipeMediaDownloaderSemaphoreStream;
 
     public async Task ReadAsync(CancellationToken cancellationToken)
     {
@@ -38,7 +40,10 @@ public class PipeMediaDownloader(
     private async Task FillPipeAsync(PipeWriter writer, CancellationToken cancellationToken)
     {
         var mediaDownloader = new MediaDownloader(resourceClient.HttpClient, options);
-        using var stream = writer.AsStream();
+        using var writerStream = writer.AsStream();
+        var stream = _useSemaphoreStream
+            ? new SemaphoreStream(writerStream)
+            : writerStream;
         try
         {
             await mediaDownloader.DownloadAsync("/get", stream, cancellationToken);

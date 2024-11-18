@@ -91,6 +91,8 @@ and validation.
 
 - `PipeMediaDownloader`: Reads and processes the response using System.IO.Pipelines and MediaDownloader and triggers
   the issue in some cases
+- `PipeMediaDownloaderSemaphoreStream`: Uses PipeMediaDownloader and wraps the writer stream in a SemaphoreStream and
+  triggers the issue in some cases
 - `PipeCopyTo`: Reads and processes the response using System.IO.Pipelines and CopyTo without using MediaDownloader
 - `ReadWriteStreamMediaDownloader`: Reads and processes the response using ReadWriteStream, StreamReader, and
   MediaDownloader. It has line logic comparable to PipeMediaDownloader but does not appear to trigger the reported

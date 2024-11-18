@@ -17,8 +17,8 @@ builder.Services
     })
     .AddSingleton<PipeCopyTo>()
     .AddSingleton<PipeMediaDownloader>()
-    .AddSingleton<ResponseVerifier>()
     .AddSingleton<ReadWriteStreamMediaDownloader>()
+    .AddSingleton<ResponseVerifier>()
     .AddSingleton<StreamReaderMediaDownloader>()
     .AddHostedService<Worker>();
 

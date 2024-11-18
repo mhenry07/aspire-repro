@@ -22,6 +22,7 @@ public class Worker(
         await (options.Value.ReaderType switch
         {
             ReaderType.PipeMediaDownloader => pipeMediaDownloader.ReadAsync(stoppingToken),
+            ReaderType.PipeMediaDownloaderSemaphoreStream => pipeMediaDownloader.ReadAsync(stoppingToken),
             ReaderType.PipeCopyTo => pipeCopyTo.ReadAsync(stoppingToken),
             ReaderType.ReadWriteStreamMediaDownloader => readWriteStreamMediaDownloader.ReadAsync(stoppingToken),
             ReaderType.StreamReaderMediaDownloader => streamReaderMediaDownloader.ReadAsync(stoppingToken),

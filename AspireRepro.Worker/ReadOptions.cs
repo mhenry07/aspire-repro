@@ -13,6 +13,7 @@ public class ReadOptions
 public enum ReaderType
 {
     PipeMediaDownloader,
+    PipeMediaDownloaderSemaphoreStream,
     PipeCopyTo,
     ReadWriteStreamMediaDownloader,
     StreamReaderMediaDownloader,
