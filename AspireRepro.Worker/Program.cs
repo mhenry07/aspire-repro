@@ -13,7 +13,7 @@ builder.Services
         options.BatchSize = 100;
         options.ChunkSize = 4_000_000;
         options.IoDelay = TimeSpan.FromMilliseconds(15);
-        options.ReaderType = ReaderType.PipeMediaDownloader;
+        options.ReaderType = ReaderType.PipeFillBuffer;
     })
     .AddSingleton<PipeBuffer>()
     .AddSingleton<PipeCopyTo>()

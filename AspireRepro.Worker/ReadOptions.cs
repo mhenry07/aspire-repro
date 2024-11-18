@@ -7,7 +7,7 @@ public class ReadOptions
     public int? BatchSize { get; set; }
     public int? ChunkSize { get; set; }
     public TimeSpan? IoDelay { get; set; }
-    public ReaderType ReaderType { get; set; } = ReaderType.PipeMediaDownloader;
+    public ReaderType ReaderType { get; set; } = ReaderType.PipeFillBuffer;
 }
 
 public enum ReaderType
