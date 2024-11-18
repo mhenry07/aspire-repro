@@ -7,7 +7,8 @@ from AspireRepro.Worker.
 
 Compare running with the debugger attached vs. detached.
 
-Note: Since filing the issue, I've been able to reproduce the issue in VS 17.11 and with the debugger detached.
+Note: Since filing the issue, I've been able to reproduce the issue in VS 17.11 and VS 17.12 with the debugger attached
+and detached, and in both .NET 8.0 and .NET 9.0.
 
 Here are some logs of when the data discrepancy occurred:
 
