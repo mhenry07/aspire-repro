@@ -92,6 +92,9 @@ and validation.
 - `PipeMediaDownloader`: Reads and processes the response using System.IO.Pipelines and MediaDownloader and triggers
   the issue in some cases
 - `PipeCopyTo`: Reads and processes the response using System.IO.Pipelines and CopyTo without using MediaDownloader
+- `ReadWriteStreamMediaDownloader`: Reads and processes the response using ReadWriteStream, StreamReader, and
+  MediaDownloader. It has line logic comparable to PipeMediaDownloader but does not appear to trigger the reported
+  issue.
 - `StreamReaderMediaDownloader`: Reads and processes the response using StreamReader and MediaDownloader without using
   System.IO.Pipelines. Uses a lot of memory since it buffers the full response.
 - `ResponseVerifier`: Reads the response without using MediaDownloader or System.IO.Pipelines and verifies that the

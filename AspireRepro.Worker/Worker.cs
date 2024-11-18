@@ -4,8 +4,13 @@ using Microsoft.Extensions.Options;
 namespace AspireRepro.Worker;
 
 public class Worker(
-    ILogger<Worker> logger, IOptions<ReadOptions> options, PipeMediaDownloader pipeMediaDownloader,
-    PipeCopyTo pipeCopyTo, StreamReaderMediaDownloader streamReaderMediaDownloader, ResponseVerifier verifier)
+    ILogger<Worker> logger,
+    IOptions<ReadOptions> options,
+    PipeCopyTo pipeCopyTo,
+    PipeMediaDownloader pipeMediaDownloader,
+    ReadWriteStreamMediaDownloader readWriteStreamMediaDownloader,
+    StreamReaderMediaDownloader streamReaderMediaDownloader,
+    ResponseVerifier verifier)
     : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -18,6 +23,7 @@ public class Worker(
         {
             ReaderType.PipeMediaDownloader => pipeMediaDownloader.ReadAsync(stoppingToken),
             ReaderType.PipeCopyTo => pipeCopyTo.ReadAsync(stoppingToken),
+            ReaderType.ReadWriteStreamMediaDownloader => readWriteStreamMediaDownloader.ReadAsync(stoppingToken),
             ReaderType.StreamReaderMediaDownloader => streamReaderMediaDownloader.ReadAsync(stoppingToken),
             ReaderType.ResponseVerifier => verifier.VerifyAsync(stoppingToken),
             _ => throw new InvalidOperationException($"Unexpected ReaderType: {options.Value.ReaderType}")

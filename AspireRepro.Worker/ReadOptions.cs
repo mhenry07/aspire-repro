@@ -14,6 +14,7 @@ public enum ReaderType
 {
     PipeMediaDownloader,
     PipeCopyTo,
+    ReadWriteStreamMediaDownloader,
     StreamReaderMediaDownloader,
     ResponseVerifier
 }
