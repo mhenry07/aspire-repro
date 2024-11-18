@@ -6,6 +6,7 @@ namespace AspireRepro.Worker;
 public class Worker(
     ILogger<Worker> logger,
     IOptions<ReadOptions> options,
+    PipeBuffer pipeBuffer,
     PipeCopyTo pipeCopyTo,
     PipeMediaDownloader pipeMediaDownloader,
     ReadWriteStreamMediaDownloader readWriteStreamMediaDownloader,
@@ -21,9 +22,11 @@ public class Worker(
         var stopwatch = Stopwatch.StartNew();
         await (options.Value.ReaderType switch
         {
+            ReaderType.PipeBuffer => pipeBuffer.ReadAsync(stoppingToken),
+            ReaderType.PipeCopyTo => pipeCopyTo.ReadAsync(stoppingToken),
+            ReaderType.PipeFillBuffer => pipeBuffer.ReadAsync(stoppingToken),
             ReaderType.PipeMediaDownloader => pipeMediaDownloader.ReadAsync(stoppingToken),
             ReaderType.PipeMediaDownloaderSemaphoreStream => pipeMediaDownloader.ReadAsync(stoppingToken),
-            ReaderType.PipeCopyTo => pipeCopyTo.ReadAsync(stoppingToken),
             ReaderType.ReadWriteStreamMediaDownloader => readWriteStreamMediaDownloader.ReadAsync(stoppingToken),
             ReaderType.StreamReaderMediaDownloader => streamReaderMediaDownloader.ReadAsync(stoppingToken),
             ReaderType.ResponseVerifier => verifier.VerifyAsync(stoppingToken),

@@ -86,13 +86,16 @@ Mimics doing some I/O when processing a batch of lines.
 
 ### ReaderType
 
-There are multiple reader implementations. PipeMediaDownloader reproduces the issue and the others are for comparison
-and validation.
+There are multiple reader implementations. *PipeMediaDownloader*, *PipeMediaDownloaderSemaphoreStream*, and
+*PipeFillBuffer* reproduce the issue and the others are for comparison and validation.
 
 - `PipeMediaDownloader`: Reads and processes the response using System.IO.Pipelines and MediaDownloader and triggers
   the issue in some cases
 - `PipeMediaDownloaderSemaphoreStream`: Uses PipeMediaDownloader and wraps the writer stream in a SemaphoreStream and
   triggers the issue in some cases
+- `PipeBuffer`: Reads and processes the response using System.IO.Pipelines and a buffer without using MediaDownloader
+- `PipeFillBuffer`: Uses PipeBuffer with an algorithm similar to MediaDownloader to fill the buffer and triggers the
+  issue in some cases
 - `PipeCopyTo`: Reads and processes the response using System.IO.Pipelines and CopyTo without using MediaDownloader
 - `ReadWriteStreamMediaDownloader`: Reads and processes the response using ReadWriteStream, StreamReader, and
   MediaDownloader. It has line logic comparable to PipeMediaDownloader but does not appear to trigger the reported
@@ -110,8 +113,9 @@ and is used by the [Google.Cloud.Storage.V1](https://www.nuget.org/packages/Goog
 
 - MediaDownloader.cs license: see AspireRepro.Worker/MediaDownloader.LICENSE.txt
 
-The issue appears to occur specifically when System.IO.Pipelines and MediaDownloader are used together
-(PipeMediaDownloader). The other implementations don't appear to trigger the reported issue.
+The issue appears to occur specifically when System.IO.Pipelines and MediaDownloader or a similar algorithm are used
+together (PipeMediaDownloader, PipeMediaDownloaderSemaphoreStream, and PipeFillBuffer). The other implementations don't
+appear to trigger the reported issue.
 
 Ideally, it would be preferable to get System.IO.Pipelines and MediaDownloader to work well together, so that the
 Google.Cloud.Storage.V1 client library can be used to handle auth and other concerns.

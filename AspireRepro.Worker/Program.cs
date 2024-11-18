@@ -15,6 +15,7 @@ builder.Services
         options.IoDelay = TimeSpan.FromMilliseconds(15);
         options.ReaderType = ReaderType.PipeMediaDownloader;
     })
+    .AddSingleton<PipeBuffer>()
     .AddSingleton<PipeCopyTo>()
     .AddSingleton<PipeMediaDownloader>()
     .AddSingleton<ReadWriteStreamMediaDownloader>()

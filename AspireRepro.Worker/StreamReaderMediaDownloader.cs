@@ -23,7 +23,6 @@ public class StreamReaderMediaDownloader(
         var expected = new byte[Formatter.MaxLineLength];
         string? line;
 
-        // how do we read the stream while it's being written to?
         using var stream = new MemoryStream();
         var mediaDownloader = new MediaDownloader(resourceClient.HttpClient, options);
         await mediaDownloader.DownloadAsync("/get", stream, cancellationToken);

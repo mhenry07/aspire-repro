@@ -1,6 +1,6 @@
 ﻿namespace AspireRepro.Worker;
 
-// see notes in README.md
+/// <remarks>See notes in README.md</remarks>
 public class ReadOptions
 {
     public required string BaseAddress { get; set; }
@@ -12,9 +12,18 @@ public class ReadOptions
 
 public enum ReaderType
 {
-    PipeMediaDownloader,
-    PipeMediaDownloaderSemaphoreStream,
+    PipeBuffer,
     PipeCopyTo,
+
+    /// <remarks>Triggers the issue</remarks>
+    PipeFillBuffer,
+
+    /// <remarks>Triggers the issue</remarks>
+    PipeMediaDownloader,
+
+    /// <remarks>Triggers the issue</remarks>
+    PipeMediaDownloaderSemaphoreStream,
+
     ReadWriteStreamMediaDownloader,
     StreamReaderMediaDownloader,
     ResponseVerifier
