@@ -16,6 +16,7 @@ builder.Services
         options.ReaderType = ReaderType.FillBufferReader;
     })
     .AddSingleton<BufferReader>()
+    .AddSingleton<BufferReferenceStream>()
     .AddSingleton<PipeBuffer>()
     .AddSingleton<PipeCopyTo>()
     .AddSingleton<PipeMediaDownloader>()

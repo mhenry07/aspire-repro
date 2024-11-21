@@ -7,6 +7,7 @@ public class Worker(
     ILogger<Worker> logger,
     IOptions<ReadOptions> options,
     BufferReader bufferReader,
+    BufferReferenceStream bufferReferenceStream,
     PipeBuffer pipeBuffer,
     PipeCopyTo pipeCopyTo,
     PipeMediaDownloader pipeMediaDownloader,
@@ -24,7 +25,9 @@ public class Worker(
         await (options.Value.ReaderType switch
         {
             ReaderType.BufferReader => bufferReader.ReadAsync(stoppingToken),
+            ReaderType.BufferReferenceStream => bufferReferenceStream.ReadAsync(stoppingToken),
             ReaderType.FillBufferReader => bufferReader.ReadAsync(stoppingToken),
+            ReaderType.FillBufferReferenceStream => bufferReferenceStream.ReadAsync(stoppingToken),
             ReaderType.PipeBuffer => pipeBuffer.ReadAsync(stoppingToken),
             ReaderType.PipeCopyTo => pipeCopyTo.ReadAsync(stoppingToken),
             ReaderType.PipeFillBuffer => pipeBuffer.ReadAsync(stoppingToken),

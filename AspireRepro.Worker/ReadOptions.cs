@@ -13,6 +13,8 @@ public class ReadOptions
 public enum ReaderType
 {
     BufferReader,
+    BufferReferenceStream,
+    FillBufferReferenceStream,
 
     /// <remarks>Triggers the issue</remarks>
     FillBufferReader,
